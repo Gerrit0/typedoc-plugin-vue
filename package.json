@@ -19,6 +19,11 @@
     "vitest": "^0.34.6",
     "vue": "^3.3.4"
   },
+  "keywords": [
+    "typedoc-plugin",
+    "vue",
+    "pinia"
+  ],
   "peerDependencies": {
     "typedoc": "0.25.x"
   },
