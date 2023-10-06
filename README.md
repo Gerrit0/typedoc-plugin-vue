@@ -19,6 +19,10 @@ See [an example](https://gerritbirkeland.com/typedoc-plugin-vue/classes/HelloWor
 
 ## Change Log
 
+v1.1.0
+
+-   Added keywords so plugin will appear on TypeDoc's site, improved build process.
+
 v1.0.0
 
 -   Initial release

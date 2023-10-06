@@ -1,4 +1,4 @@
-import outdent from "outdent";
+import { outdent } from "outdent";
 import {
     Application,
     DeclarationReflection,
@@ -7,7 +7,7 @@ import {
     TSConfigReader,
 } from "typedoc";
 import { test, expect, beforeAll } from "vitest";
-import { load } from "../plugin";
+import { load } from "../plugin.js";
 
 let project: ProjectReflection;
 
