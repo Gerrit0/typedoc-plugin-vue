@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "request": "launch",
+            "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": ["<node_internals>/**"],
+            "type": "node",
+            "sourceMaps": true,
+            "args": [
+                "--plugin",
+                "./dist/plugin.js",
+                "./src/testdata/component.ts"
+            ],
+            "program": "${workspaceFolder}/node_modules/typedoc/bin/typedoc"
+        }
+    ]
+}
