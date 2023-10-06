@@ -1,7 +1,7 @@
 {
   "name": "typedoc-plugin-vue",
   "description": "Improves Vue defineComponent and Pinia defineStore display in TypeDoc documentation",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "main": "dist/plugin.js",
   "license": "MIT",
   "scripts": {
