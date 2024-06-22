@@ -51,14 +51,14 @@ test("Adds store properties to the store function", () => {
     ) as DeclarationReflection;
     expect(typeDeclaration.toStringHierarchy()).toBe(outdent`
         Function useCounterStore
-          CallSignature useCounterStore:PiniaStore<useCounterStore>
-            Parameter pinia:null | Pinia
-            Parameter hot:StoreGeneric
-          Property count:number
-          Property doubleCount:number
-          Property name:string
+          CallSignature useCounterStore: PiniaStore<useCounterStore>
+            Parameter pinia: null | Pinia
+            Parameter hot: StoreGeneric
+          Property count: number
+          Property doubleCount: number
+          Property name: string
           Method increment
-            CallSignature increment:void
+            CallSignature increment: void
     `);
 });
 

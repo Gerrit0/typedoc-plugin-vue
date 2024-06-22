@@ -3,11 +3,9 @@ import {
     Context,
     Converter,
     DeclarationReflection,
-    ReferenceReflection,
     ReferenceType,
     ReflectionFlag,
     ReflectionKind,
-    ReflectionType,
     SignatureReflection,
     TypeScript as ts,
 } from "typedoc";
@@ -24,6 +22,15 @@ export function load(app: Application) {
         collectStoreReferences,
     );
     app.converter.on(Converter.EVENT_CREATE_SIGNATURE, handleDefineStore);
+
+    app.converter.on(Converter.EVENT_RESOLVE_BEGIN, (context) => {
+        for (const refl of storeLinks.values()) {
+            const $id = refl.getChildByName(["$id"]);
+            if ($id) {
+                context.project.removeReflection($id);
+            }
+        }
+    });
 
     app.converter.on(Converter.EVENT_END, (context: Context) => {
         for (const [src, target] of storeLinks) {
