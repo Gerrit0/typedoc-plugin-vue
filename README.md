@@ -11,13 +11,17 @@ npm install --save-dev typedoc-plugin-vue
 ```jsonc
 // typedoc.json
 {
-    "plugin": ["typedoc-plugin-vue"]
+    "plugin": ["typedoc-plugin-vue"],
 }
 ```
 
 See [an example](https://gerritbirkeland.com/typedoc-plugin-vue/classes/HelloWorld.html) of this plugin in action.
 
 ## Change Log
+
+v1.3.0 (2024-10-24)
+
+-   Support TypeDoc 0.27
 
 v1.2.0 (2024-06-22)
 
