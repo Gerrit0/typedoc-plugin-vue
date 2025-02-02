@@ -1,4 +1,4 @@
-import { defineComponent, h } from "vue";
+import { defineComponent, FunctionalComponent, h } from "vue";
 import { defineStore } from "pinia";
 
 // Copied from https://pinia.vuejs.org/core-concepts/#Option-Stores
@@ -52,3 +52,16 @@ export const HelloWorld = defineComponent({
         return h("h1", { style: `color:${this.color}` }, this.greeting);
     },
 });
+
+interface HelloWorldProps {
+    name: string;
+}
+
+type HelloWorldEvents = Array<"helloEvent">;
+
+export const HelloWorldFunctionalComponent: FunctionalComponent<
+    HelloWorldProps,
+    HelloWorldEvents
+> = (props: HelloWorldProps, ctx) => {
+    return h("div");
+};

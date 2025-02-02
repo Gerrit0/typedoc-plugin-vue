@@ -33,16 +33,30 @@ test("Turns defineComponent objects into classes with members for methods/props/
 
     expect(
         HelloWorld.children
-            ?.filter((child) => !child.flags.isExternal)
-            .map((c) => c.name),
+            ?.map((c) => c.name)
+            .sort((a, b) => a.localeCompare(b)),
     ).toEqual([
         "color",
         "counterStore",
         "excited",
-        "name",
         "greeting",
+        "name",
         "setColor",
     ]);
+});
+
+test("Turns FunctionalComponent objects into classes", () => {
+    const HelloWorld = project.getChildByName(
+        "HelloWorldFunctionalComponent",
+    ) as DeclarationReflection;
+
+    expect(HelloWorld.kind).toBe(ReflectionKind.Class);
+
+    expect(
+        HelloWorld.children
+            ?.map((c) => c.name)
+            .sort((a, b) => a.localeCompare(b)),
+    ).toEqual(["name"]);
 });
 
 test("Adds store properties to the store function", () => {

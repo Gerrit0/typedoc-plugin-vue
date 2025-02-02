@@ -1,3 +1,4 @@
+import { ParameterType } from "typedoc";
 import {
     Application,
     Context,
@@ -10,27 +11,78 @@ import {
     TypeScript as ts,
 } from "typedoc";
 
+declare module "typedoc" {
+    interface TypeDocOptionMap {
+        excludeVueProperties: boolean;
+    }
+}
+
 // store function symbol -> reflection id that documents it
 const storeLinks = new Map<ts.Symbol, DeclarationReflection>();
 // properties/variables which reference a store
 const storeReferences = new Map<ts.Symbol, DeclarationReflection[]>();
 
+const functionalComponentProperties = [
+    "__file",
+    "__isBuiltIn",
+    "__name",
+    "compatConfig",
+    "displayName",
+    "emits",
+    "inheritAttrs",
+    "props",
+    "slots",
+];
+
+const functionalComponentReflections = new Set<DeclarationReflection>();
+
 export function load(app: Application) {
+    app.options.addDeclaration({
+        name: "excludeVueProperties",
+        help: "If set, Vue properties will be excluded from classes generated with defineComponent and FunctionalComponent",
+        type: ParameterType.Boolean,
+        defaultValue: true,
+    });
+
     app.converter.on(Converter.EVENT_CREATE_DECLARATION, handleDefineComponent);
     app.converter.on(
         Converter.EVENT_CREATE_DECLARATION,
         collectStoreReferences,
     );
+    app.converter.on(
+        Converter.EVENT_CREATE_DECLARATION,
+        functionalComponentToClass,
+    );
     app.converter.on(Converter.EVENT_CREATE_SIGNATURE, handleDefineStore);
 
-    app.converter.on(Converter.EVENT_RESOLVE_BEGIN, (context) => {
-        for (const refl of storeLinks.values()) {
-            const $id = refl.getChildByName(["$id"]);
-            if ($id) {
-                context.project.removeReflection($id);
+    app.converter.on(
+        Converter.EVENT_RESOLVE_BEGIN,
+        (context) => {
+            for (const decl of functionalComponentReflections) {
+                for (const sig of decl.signatures?.slice() || []) {
+                    context.project.removeReflection(sig);
+                }
+
+                if (app.options.getValue("excludeVueProperties")) {
+                    for (const prop of functionalComponentProperties) {
+                        const reflProp = decl.getChildByName([prop]);
+                        if (reflProp) {
+                            context.project.removeReflection(reflProp);
+                        }
+                    }
+                }
             }
-        }
-    });
+            functionalComponentReflections.clear();
+
+            for (const refl of storeLinks.values()) {
+                const $id = refl.getChildByName(["$id"]);
+                if ($id) {
+                    context.project.removeReflection($id);
+                }
+            }
+        },
+        1000,
+    );
 
     app.converter.on(Converter.EVENT_END, (context: Context) => {
         for (const [src, target] of storeLinks) {
@@ -91,6 +143,27 @@ function collectStoreReferences(context: Context, refl: DeclarationReflection) {
     }
 }
 
+const defineComponentProperties = [
+    "_pStores",
+    "$",
+    "$attrs",
+    "$data",
+    "$el",
+    "$emit",
+    "$forceUpdate",
+    "$host",
+    "$nextTick",
+    "$options",
+    "$parent",
+    "$props",
+    "$refs",
+    "$root",
+    "$slots",
+    "$watch",
+    // Only if using pinia
+    "$pinia",
+];
+
 function handleDefineComponent(context: Context, refl: DeclarationReflection) {
     if (
         !refl.kindOf(ReflectionKind.Variable) ||
@@ -116,8 +189,60 @@ function handleDefineComponent(context: Context, refl: DeclarationReflection) {
     refl.kind = ReflectionKind.Class;
 
     for (const prop of instanceType.getProperties()) {
+        if (
+            !context.converter.application.options.getValue(
+                "excludeVueProperties",
+            ) ||
+            !defineComponentProperties.includes(prop.name)
+        ) {
+            context.converter.convertSymbol(context.withScope(refl), prop);
+        }
+    }
+
+    context.project.removeTypeReflections?.(refl.type);
+    delete refl.type;
+    delete refl.defaultValue;
+}
+
+function functionalComponentToClass(
+    context: Context,
+    refl: DeclarationReflection,
+) {
+    const symbol = refl.project.getSymbolFromReflection(refl);
+    const decl = symbol?.getDeclarations()?.[0];
+
+    if (
+        !decl ||
+        !ts.isVariableDeclaration(decl) ||
+        !decl.type ||
+        !ts.isTypeReferenceNode(decl.type)
+    ) {
+        return;
+    }
+
+    const declaredType = context.checker.getTypeAtLocation(decl.type);
+
+    if (
+        !isReferenceType(declaredType) ||
+        declaredType.getSymbol()?.name !== "FunctionalComponent"
+    ) {
+        return;
+    }
+
+    const typeArgs = context.checker.getTypeArguments(declaredType);
+    if (typeArgs.length < 1) return;
+
+    const propType = typeArgs[0];
+
+    // Convert this reflection to a class
+    refl.setFlag(ReflectionFlag.Const, false);
+    refl.kind = ReflectionKind.Class;
+
+    for (const prop of propType.getProperties()) {
         context.converter.convertSymbol(context.withScope(refl), prop);
     }
+
+    functionalComponentReflections.add(refl);
 }
 
 const piniaProperties = new Set([
@@ -177,4 +302,15 @@ function handleDefineStore(context: Context, refl: SignatureReflection) {
             context.project,
         ),
     ];
+}
+
+function isObjectType(type: ts.Type): type is ts.ObjectType {
+    return typeof (type as any).objectFlags === "number";
+}
+
+function isReferenceType(type: ts.Type): type is ts.TypeReference {
+    return (
+        isObjectType(type) &&
+        (type.objectFlags & ts.ObjectFlags.Reference) !== 0
+    );
 }
