@@ -1,4 +1,4 @@
-import { ParameterType } from "typedoc";
+import { ParameterType, Reflection } from "typedoc";
 import {
     Application,
     Context,
@@ -39,7 +39,8 @@ const functionalComponentReflections = new Set<DeclarationReflection>();
 export function load(app: Application) {
     app.options.addDeclaration({
         name: "excludeVueProperties",
-        help: "If set, Vue properties will be excluded from classes generated with defineComponent and FunctionalComponent",
+        help:
+            "If set, Vue properties will be excluded from classes generated with defineComponent and FunctionalComponent",
         type: ParameterType.Boolean,
         defaultValue: true,
     });
@@ -114,15 +115,14 @@ function collectStoreReferences(context: Context, refl: DeclarationReflection) {
         return;
     }
 
-    const declaration = refl.project
-        .getSymbolFromReflection(refl)
+    const declaration = getSymbolFromReflection(context, refl)
         ?.getDeclarations()?.[0];
 
     if (
-        !declaration ||
-        !ts.isPropertyAssignment(declaration) ||
-        !declaration.initializer ||
-        !ts.isCallExpression(declaration.initializer)
+        !declaration
+        || !ts.isPropertyAssignment(declaration)
+        || !declaration.initializer
+        || !ts.isCallExpression(declaration.initializer)
     ) {
         return;
     }
@@ -166,16 +166,15 @@ const defineComponentProperties = [
 
 function handleDefineComponent(context: Context, refl: DeclarationReflection) {
     if (
-        !refl.kindOf(ReflectionKind.Variable) ||
-        refl.type?.type !== "reference" ||
-        refl.type.package !== "@vue/runtime-core" ||
-        refl.type.qualifiedName !== "DefineComponent"
+        !refl.kindOf(ReflectionKind.Variable)
+        || refl.type?.type !== "reference"
+        || refl.type.package !== "@vue/runtime-core"
+        || refl.type.qualifiedName !== "DefineComponent"
     ) {
         return;
     }
 
-    const declaration = refl.project
-        .getSymbolFromReflection(refl)
+    const declaration = getSymbolFromReflection(context, refl)
         ?.getDeclarations()?.[0];
     if (!declaration) return;
 
@@ -192,8 +191,8 @@ function handleDefineComponent(context: Context, refl: DeclarationReflection) {
         if (
             !context.converter.application.options.getValue(
                 "excludeVueProperties",
-            ) ||
-            !defineComponentProperties.includes(prop.name)
+            )
+            || !defineComponentProperties.includes(prop.name)
         ) {
             context.converter.convertSymbol(context.withScope(refl), prop);
         }
@@ -208,14 +207,14 @@ function functionalComponentToClass(
     context: Context,
     refl: DeclarationReflection,
 ) {
-    const symbol = refl.project.getSymbolFromReflection(refl);
+    const symbol = getSymbolFromReflection(context, refl);
     const decl = symbol?.getDeclarations()?.[0];
 
     if (
-        !decl ||
-        !ts.isVariableDeclaration(decl) ||
-        !decl.type ||
-        !ts.isTypeReferenceNode(decl.type)
+        !decl
+        || !ts.isVariableDeclaration(decl)
+        || !decl.type
+        || !ts.isTypeReferenceNode(decl.type)
     ) {
         return;
     }
@@ -223,8 +222,8 @@ function functionalComponentToClass(
     const declaredType = context.checker.getTypeAtLocation(decl.type);
 
     if (
-        !isReferenceType(declaredType) ||
-        declaredType.getSymbol()?.name !== "FunctionalComponent"
+        !isReferenceType(declaredType)
+        || declaredType.getSymbol()?.name !== "FunctionalComponent"
     ) {
         return;
     }
@@ -258,15 +257,15 @@ const piniaProperties = new Set([
 
 function handleDefineStore(context: Context, refl: SignatureReflection) {
     if (
-        !refl.kindOf(ReflectionKind.CallSignature) ||
-        refl?.type?.type !== "reference" ||
-        refl.type.package !== "pinia" ||
-        refl.type.qualifiedName !== "Store"
+        !refl.kindOf(ReflectionKind.CallSignature)
+        || refl?.type?.type !== "reference"
+        || refl.type.package !== "pinia"
+        || refl.type.qualifiedName !== "Store"
     ) {
         return;
     }
 
-    const symbol = context.project.getSymbolFromReflection(refl.parent);
+    const symbol = getSymbolFromReflection(context, refl.parent);
     if (!symbol) return;
 
     const type = context.checker
@@ -310,7 +309,16 @@ function isObjectType(type: ts.Type): type is ts.ObjectType {
 
 function isReferenceType(type: ts.Type): type is ts.TypeReference {
     return (
-        isObjectType(type) &&
-        (type.objectFlags & ts.ObjectFlags.Reference) !== 0
+        isObjectType(type)
+        && (type.objectFlags & ts.ObjectFlags.Reference) !== 0
     );
+}
+
+function getSymbolFromReflection(context: Context, refl: Reflection) {
+    if ("getSymbolFromReflection" in context) {
+        // TypeDoc 0.28
+        return context.getSymbolFromReflection(refl);
+    }
+    // TypeDoc <0.28
+    return (refl.project as any).getSymbolFromReflection(refl);
 }

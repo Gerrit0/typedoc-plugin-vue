@@ -1,38 +1,44 @@
 {
-  "name": "typedoc-plugin-vue",
-  "description": "Improves Vue defineComponent and Pinia defineStore display in TypeDoc documentation",
-  "type": "module",
-  "version": "1.4.0",
-  "main": "dist/plugin.js",
-  "license": "MIT",
-  "scripts": {
-    "build": "tsc",
-    "lint": "prettier --check .",
-    "test": "vitest run",
-    "docs": "typedoc --plugin ./dist/plugin.js"
-  },
-  "devDependencies": {
-    "outdent": "^0.8.0",
-    "pinia": "^2.3.1",
-    "prettier": "3.4.2",
-    "typedoc": "^0.27.6",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.4",
-    "vue": "^3.5.13"
-  },
-  "keywords": [
-    "typedoc-plugin",
-    "vue",
-    "pinia"
-  ],
-  "peerDependencies": {
-    "typedoc": "0.25.x || 0.26.x || 0.27.x"
-  },
-  "files": [
-    "dist/plugin.js"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/Gerrit0/typedoc-plugin-vue.git"
-  }
+    "name": "typedoc-plugin-vue",
+    "description": "Improves Vue defineComponent and Pinia defineStore display in TypeDoc documentation",
+    "type": "module",
+    "version": "1.4.0",
+    "main": "dist/plugin.js",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc",
+        "lint": "dprint check",
+        "test": "vitest run",
+        "doc": "typedoc --plugin ./dist/plugin.js"
+    },
+    "devDependencies": {
+        "dprint": "^0.49.0",
+        "outdent": "^0.8.0",
+        "pinia": "^3.0.1",
+        "typedoc": "^0.28.0-beta.1",
+        "typescript": "^5.8.2",
+        "vitest": "^3.0.7",
+        "vue": "^3.5.13"
+    },
+    "keywords": [
+        "typedoc-plugin",
+        "vue",
+        "pinia"
+    ],
+    "peerDependencies": {
+        "typedoc": "0.25.x || 0.26.x || 0.27.x || 0.28.x"
+    },
+    "files": [
+        "dist/plugin.js"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/Gerrit0/typedoc-plugin-vue.git"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "dprint",
+            "esbuild"
+        ]
+    }
 }

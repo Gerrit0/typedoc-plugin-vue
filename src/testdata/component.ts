@@ -1,7 +1,8 @@
-import { defineComponent, FunctionalComponent, h } from "vue";
 import { defineStore } from "pinia";
+import { defineComponent, FunctionalComponent, h } from "vue";
 
 // Copied from https://pinia.vuejs.org/core-concepts/#Option-Stores
+/** @function */
 export const useCounterStore = defineStore("counter", {
     state: () => ({ count: 0, name: "Eduardo" }),
     getters: {

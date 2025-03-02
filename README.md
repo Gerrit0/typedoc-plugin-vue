@@ -14,13 +14,17 @@ npm install --save-dev typedoc-plugin-vue
 {
     "plugin": ["typedoc-plugin-vue"],
     // Defaults to true, removes $props, $watch, etc. from generated classes
-    "excludeVueProperties": true,
+    "excludeVueProperties": true
 }
 ```
 
 See [an example](https://gerritbirkeland.com/typedoc-plugin-vue/classes/HelloWorld.html) of this plugin in action.
 
 ## Change Log
+
+v1.5.0 (2025-03-02)
+
+- Added support for TypeDoc 0.28
 
 v1.4.0 (2025-02-01)
 
