@@ -21,7 +21,7 @@ jobs:
             - name: Build
               run: pnpm build
             - name: Build docs
-              run: pnpm doc -- src/testdata/component.ts
+              run: pnpm doc src/testdata/component.ts
             - name: Deploy
               uses: JamesIves/github-pages-deploy-action@v4.4.1
               with:
