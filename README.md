@@ -22,6 +22,10 @@ See [an example](https://gerritbirkeland.com/typedoc-plugin-vue/classes/HelloWor
 
 ## Change Log
 
+v1.5.1 (2025-10-11)
+
+- No behavior changes, migrated release workflow to use trusted publishing.
+
 v1.5.0 (2025-03-02)
 
 - Added support for TypeDoc 0.28
